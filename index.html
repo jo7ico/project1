@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & Jobs 2050 Quiz</title>
+    <style>
+        /* CSS Variables for easy theme management */
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Screens Visibility */
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { margin-bottom: 20px; color: var(--primary-color); text-align: center; }
+        p.description { margin-bottom: 30px; line-height: 1.6; text-align: center; color: var(--secondary-color); }
+
+        /* Timer & Progress Styles */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        #timer {
+            color: var(--danger-color);
+            font-size: 1.2rem;
+            background: #fee2e2;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        /* Question Styles */
+        .question-text {
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: none;
+            text-align: left;
+            font-size: 1rem;
+        }
+
+        .option:hover {
+            background-color: #f1f5f9;
+            border-color: var(--primary-color);
+        }
+
+        .option.selected {
+            background-color: #dbeafe;
+            border-color: var(--primary-color);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .btn-start { background: var(--primary-color); color: white; width: 100%; font-size: 1.1rem; }
+        .btn-next { background: var(--primary-color); color: white; }
+        .btn-prev { background: var(--secondary-color); color: white; }
+        .btn-submit { background: var(--success-color); color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Results Screen */
+        .result-card { text-align: center; }
+        .score-big { font-size: 4rem; color: var(--primary-color); margin: 20px 0; }
+        .percentage { font-size: 1.5rem; margin-bottom: 20px; }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container { padding: 20px; }
+            .btn-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen active">
+            <h1>AI & The Future of Work 2050</h1>
+            <p class="description">
+                How much do you know about the impact of Artificial Intelligence on the global workforce by the year 2050? 
+                <br><br>
+                <strong>Rules:</strong><br>
+                • 10 Questions (Multiple Choice & True/False)<br>
+                • 3 minutes per question<br>
+                • Score tracking in real-time
+            </p>
+            <button class="btn btn-start" onclick="startQuiz()">START QUIZ</button>
+        </div>
+
+        <!-- QUIZ SCREEN -->
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-header">
+                <span id="question-counter">Question 1 of 10</span>
+                <span id="timer">03:00</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+
+            <div id="question-container">
+                <div class="question-text" id="question-text">Question text goes here?</div>
+                <div class="options-container" id="options-container">
+                    <!-- Options injected by JS -->
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-prev" id="prev-btn" onclick="changeQuestion(-1)">Previous</button>
+                <button class="btn btn-next" id="next-btn" onclick="changeQuestion(1)">Next</button>
+            </div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen" class="screen">
+            <div class="result-card">
+                <h1>Quiz Completed!</h1>
+                <div class="score-big" id="final-score">0/10</div>
+                <div class="percentage" id="final-percentage">0%</div>
+                <p id="result-message"></p>
+                <button class="btn btn-start" style="margin-top: 20px;" onclick="location.reload()">Retake Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. QUIZ DATA
+        const questions = [
+            {
+                question: "By 2050, experts predict AI could replace approximately how many jobs worldwide?",
+                options: ["50 million", "150 million", "300 million", "500 million"],
+                answer: "300 million",
+                type: "mcq"
+            },
+            {
+                question: "AI advancements are expected to completely eliminate the need for human workers in all industries by 2050.",
+                options: ["True", "False"],
+                answer: "False",
+                type: "tf"
+            },
+            {
+                question: "What is the term for economic growth that does not lead to a proportional increase in employment?",
+                options: ["Cyclical Expansion", "Jobless Growth", "Workforce Diversification", "Productivity Inflation"],
+                answer: "Jobless Growth",
+                type: "mcq"
+            },
+            {
+                question: "Which industry is most at risk of automation by 2050?",
+                options: ["Healthcare", "Manufacturing", "Education", "Agriculture"],
+                answer: "Manufacturing",
+                type: "mcq"
+            },
+            {
+                question: "Which type of white‑collar job is predicted to be heavily impacted by AI automation by 2050?",
+                options: ["Executive leadership roles", "Translation jobs", "High‑level scientific research", "Skilled trade work"],
+                answer: "Translation jobs",
+                type: "mcq"
+            },
+            {
+                question: "By 2050, the concept of a long, stable career at one organization will likely be obsolete.",
+                options: ["True", "False"],
+                answer: "True",
+                type: "tf"
+            },
+            {
+                question: "What percentage of white-collar corporate roles could be automated with current AI models?",
+                options: ["25%", "50%", "75%", "90%"],
+                answer: "90%",
+                type: "mcq"
+            },
+            {
+                question: "Which option correctly matches each industry with its predicted AI impact by 2050?",
+                options: [
+                    "Healthcare → Fully automated; Manufacturing → AI tutors; Education → High automation",
+                    "Healthcare → AI assists diagnosis; Manufacturing → High automation; Education → AI tutors supplement",
+                    "Healthcare → AI replaces professionals; Manufacturing → Minimal automation; Education → No AI",
+                    "Healthcare → AI tutors; Manufacturing → Humans essential; Education → Fully automated"
+                ],
+                answer: "Healthcare → AI assists diagnosis; Manufacturing → High automation; Education → AI tutors supplement",
+                type: "mcq"
+            },
+            {
+                question: "Which new type of career is expected to grow as AI replaces traditional jobs?",
+                options: ["AI ethics specialists", "Coal miners", "Telephone operators", "Typewriter repairers"],
+                answer: "AI ethics specialists",
+                type: "mcq"
+            },
+            {
+                question: "Mass underemployment caused by AI could lead to economic depression if not managed properly.",
+                options: ["True", "False"],
+                answer: "True",
+                type: "tf"
+            }
+        ];
+
+        // 2. STATE VARIABLES
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let timerInterval;
+        let timeLeft = 180; // 3 minutes in seconds
+
+        // 3. CORE FUNCTIONS
+        function startQuiz() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('quiz-screen').classList.add('active');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestionIndex];
+            
+            // Update Header & Progress
+            document.getElementById('question-counter').innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            document.getElementById('progress-fill').style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+            
+            // Set Question Text
+            document.getElementById('question-text').innerText = question.question;
+            
+            // Render Options
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option';
+                if (userAnswers[currentQuestionIndex] === option) btn.classList.add('selected');
+                btn.innerText = option;
+                btn.onclick = () => selectOption(option);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Update Navigation Buttons
+            document.getElementById('prev-btn').disabled = (currentQuestionIndex === 0);
+            if (currentQuestionIndex === questions.length - 1) {
+                document.getElementById('next-btn').innerText = "Finish Quiz";
+                document.getElementById('next-btn').classList.add('btn-submit');
+            } else {
+                document.getElementById('next-btn').innerText = "Next";
+                document.getElementById('next-btn').classList.remove('btn-submit');
+            }
+
+            resetTimer();
+        }
+
+        function selectOption(selected) {
+            userAnswers[currentQuestionIndex] = selected;
+            // Update UI to show selection
+            const buttons = document.querySelectorAll('.option');
+            buttons.forEach(btn => {
+                btn.classList.remove('selected');
+                if(btn.innerText === selected) btn.classList.add('selected');
+            });
+        }
+
+        function changeQuestion(step) {
+            // Save state and move
+            currentQuestionIndex += step;
+
+            if (currentQuestionIndex >= questions.length) {
+                calculateResults();
+            } else if (currentQuestionIndex < 0) {
+                currentQuestionIndex = 0;
+            } else {
+                showQuestion();
+            }
+        }
+
+        // 4. TIMER LOGIC
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 180; // 3 minutes
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    // Auto-advance if time runs out
+                    if (currentQuestionIndex < questions.length - 1) {
+                        changeQuestion(1);
+                    } else {
+                        calculateResults();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // 5. RESULTS LOGIC
+        function calculateResults() {
+            clearInterval(timerInterval);
+            let score = 0;
+            
+            questions.forEach((q, index) => {
+                // Exact string match check
+                if (userAnswers[index] === q.answer) {
+                    score++;
+                }
+            });
+
+            const percentage = (score / questions.length) * 100;
+
+            document.getElementById('quiz-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            document.getElementById('final-percentage').innerText = `${percentage}%`;
+            
+            let message = "";
+            if (percentage >= 80) message = "Excellent! You have a great understanding of AI's future.";
+            else if (percentage >= 50) message = "Good job! You're well-informed about the upcoming shifts.";
+            else message = "Interesting topic, isn't it? AI will certainly change the world by 2050.";
+            
+            document.getElementById('result-message').innerText = message;
+        }
+    </script>
+</body>
+</html>
